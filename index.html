@@ -930,6 +930,7 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 async function saveData() {
+    console.log("저장 시도");
   try {
     await addDoc(collection(db, "survey"), {
       test: "hello",
