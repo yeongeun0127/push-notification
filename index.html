@@ -866,7 +866,10 @@ function goNext() {
   if (!isAnswered()) return;
   if (stepIdx < curSec().steps.length - 1) { stepIdx++; render(); }
   else if (secIdx < sections.length - 1) { secIdx++; stepIdx = 0; render(); }
-  else submitSurvey();
+  else {
+    saveData();
+    submitSurvey();
+  }
 }
 function goBack() {
   if (stepIdx > 0) { stepIdx--; render(); }
@@ -925,7 +928,19 @@ const firebaseConfig = {
 };
 
 const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);</script>
+const db = getFirestore(app);
+async function saveData() {
+  try {
+    await addDoc(collection(db, "survey"), {
+      test: "hello",
+      time: new Date()
+    });
+    console.log("저장됨");
+  } catch (e) {
+    console.error("에러:", e);
+  }
+}
+</script>
 </body>
 </html>
 
