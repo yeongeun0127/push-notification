@@ -910,5 +910,24 @@ function submitSurvey() {
     '</div>';
 }
 </script>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-app.js";
+import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyADwpuLDoa3UpkxK8GzifYmzxf7iK3bgTo",
+  authDomain: "push-notification-648ca.firebaseapp.com",
+  projectId: "push-notification-648ca",
+  storageBucket: "push-notification-648ca.firebasestorage.app",
+  messagingSenderId: "60625020108",
+  appId: "1:60625020108:web:34588c1aa847238d970e69",
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);</script>
+</body>
+</html>
+
 </body>
 </html>
