@@ -868,8 +868,10 @@ function goNext() {
   else if (secIdx < sections.length - 1) { secIdx++; stepIdx = 0; render(); }
   else {
     saveData();
+  setTimeout(() => {
     submitSurvey();
-  }
+  }, 500);
+}
 }
 function goBack() {
   if (stepIdx > 0) { stepIdx--; render(); }
@@ -930,13 +932,15 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 async function saveData() {
-    console.log("저장 시도");
+  console.log("저장 시도");
+
   try {
     await addDoc(collection(db, "survey"), {
-      test: "hello",
-      time: new Date()
+      answers: answers,
+      createdAt: new Date()
     });
-    console.log("저장됨");
+
+    console.log("저장 성공");
   } catch (e) {
     console.error("에러:", e);
   }
