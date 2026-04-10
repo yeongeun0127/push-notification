@@ -578,13 +578,23 @@ function showLogin() { showPage('page-login'); }
 
 function checkPW() {
   const val = document.getElementById('pw-input').value;
-  if (val === PW) {
-    document.getElementById('login-error').style.display = 'none';
-    document.getElementById('pw-input').value = '';
-    genderFilter = '전체'; ageFilter = '전체'; currentTab = 'overview';
+if (val === PW) {
+  document.getElementById('login-error').style.display = 'none';
+  document.getElementById('pw-input').value = '';
+  genderFilter = '전체'; ageFilter = '전체'; currentTab = 'overview';
+
+  if (window.loadFromFirebase) {
+    window.loadFromFirebase().then(data => {
+      allResponses = data;
+      renderResultPage();
+      showPage('page-result');
+    });
+  } else {
     renderResultPage();
     showPage('page-result');
-  } else {
+  }
+
+} else {
     document.getElementById('login-error').style.display = 'block';
   }
 }
@@ -1005,16 +1015,28 @@ function submitSurvey() {
   const compareFeeling = answers[3][1];
   const compareFeelingOther = Array.isArray(compareFeeling) && compareFeeling.otherText ? compareFeeling.otherText : '';
   allResponses.push({
-    gender:    answers[0][0] !== null ? ['남','여'][answers[0][0]] : '',
-    age:       answers[0][1] !== null ? ['10대','20대','30대','40대','50대 이상'][answers[0][1]] : '',
-    expName:   answers[2][0] || '',
-    expName:    getExpName(),
-    notifPick: answers[2][1],
-    notifPick2: answers[2][2],
-    notifWorst: answers[2][3],
+    gender:              answers[0][0] !== null ? ['남','여'][answers[0][0]] : '',
+    age:                 answers[0][1] !== null ? ['10대','20대','30대','40대','50대 이상'][answers[0][1]] : '',
+    expName:             getExpName(),
+    notifPick:           answers[2][1],
+    notifPick2:          answers[2][2],
+    notifWorst:          answers[2][3],
     compareFeelingOther: compareFeelingOther
   });
 
+  if (window.saveToFirebase) {
+    window.saveToFirebase({
+      gender:           answers[0][0] !== null ? ['남','여'][answers[0][0]] : '',
+      age:              answers[0][1] !== null ? ['10대','20대','30대','40대','50대 이상'][answers[0][1]] : '',
+      expName:          getExpName(),
+      notifPick:        answers[2][1] || null,
+      notifPick2:       answers[2][2] || null,
+      notifWorst:       answers[2][3] || null,
+      interviewWilling: answers[4][0] !== null ? ['예','아니오'][answers[4][0]] : '',
+      interviewContact: answers[4][1] || '',
+      eventContact:     answers[4][2] || ''
+    });
+  }
   const card = document.getElementById('survey-card');
   const secBlocks = sections.map((sec, si) => {
     const rows = sec.steps.map((st, qi) => {
@@ -1053,5 +1075,38 @@ function submitSurvey() {
     '</div>';
 }
 </script>
+
+<script type="module">
+  import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+  import { getFirestore, collection, addDoc, getDocs, orderBy, query }
+    from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+  
+  // ✅ 여기를 본인의 firebaseConfig로 교체
+   const firebaseConfig = {
+      apiKey: "AIzaSyADwpuLDoa3UpkxK8GzifYmzxf7iK3bgTo",
+      authDomain: "push-notification-648ca.firebaseapp.com",
+      projectId: "push-notification-648ca",
+      storageBucket: "push-notification-648ca.firebasestorage.app",
+      messagingSenderId: "60625020108",
+      appId: "1:60625020108:web:f810d7cc658ce524970e69",
+      measurementId: "G-6FWLJP16WT"
+    };
+  
+  const app = initializeApp(firebaseConfig);
+  const db  = getFirestore(app);
+  
+  // 응답 저장 (설문 제출 시 자동 호출)
+  window.saveToFirebase = async function(data) {
+    try {
+      await addDoc(collection(db, 'survey_responses'), {
+        ...data,
+        submittedAt: new Date().toISOString()
+      });
+      console.log('✅ 저장 완료');
+    } catch(e) {
+      console.error('❌ 저장 실패', e);
+    }
+  };
+</script> 
 </body>
 </html>
