@@ -689,15 +689,37 @@ function renderResultPage() {
       const pickIdx  = ['n1','n2','n3','n4','n5','n6'].indexOf(r.notifPick);
       const pick2Idx = ['n1','n2','n3','n4','n5','n6'].indexOf(r.notifPick2);
       const worstIdx = ['n1','n2','n3','n4','n5','n6'].indexOf(r.notifWorst);
+      const row = (label, val) => val ? '<div style="display:flex;gap:6px;padding:4px 0;border-bottom:1px solid rgba(0,0,0,0.05);font-size:12px;"><span style="color:#A09E98;flex-shrink:0;min-width:110px;">' + label + '</span><span style="color:#1A1917;">' + val + '</span></div>' : '';
       html += '<div class="resp-item" style="display:flex;align-items:flex-start;gap:10px;">' +
         '<input type="checkbox" class="resp-check" data-idx="' + realIdx + '" style="margin-top:3px;flex-shrink:0;width:16px;height:16px;cursor:pointer;accent-color:#A32D2D;" />' +
         '<div style="flex:1;">' +
-        '<div class="resp-name">' + displayNum + '. ' + (r.expName || '(미입력)') + ' <span class="resp-meta">' + r.gender + ' · ' + r.age + '</span></div>' +
-        '<div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:4px;">' +
+        '<div class="resp-name" style="margin-bottom:6px;">' + displayNum + '. ' + (r.expName || '(미입력)') + ' <span class="resp-meta">' + r.gender + ' · ' + r.age + '</span></div>' +
+        '<div style="background:#fff;border-radius:8px;padding:6px 10px;margin-bottom:6px;">' +
+        row('앱 이용 빈도', r.appUsage) +
+        row('알림 설정', r.notifOnOff) +
+        row('알림 수신 이유', r.notifReason) +
+        row('알림 인식', r.notifFeeling) +
+        row('알림 해제 이유', r.notifOffReason) +
+        row('도움이 되는 경우', r.helpCase) +
+        row('불편한 경우', r.annoyCase) +
+        row('열람 빈도', r.openRate) +
+        '</div>' +
+        '<div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:6px;">' +
         (pickIdx  >= 0 ? '<span class="resp-pick" style="background:#EEEDFE;color:#534AB7;">1순위: ' + NOTIF_LABELS[pickIdx]  + '</span>' : '') +
         (pick2Idx >= 0 ? '<span class="resp-pick" style="background:#E1F5EE;color:#0F6E56;">2순위: ' + NOTIF_LABELS[pick2Idx] + '</span>' : '') +
         (worstIdx >= 0 ? '<span class="resp-pick" style="background:#FCEBEB;color:#A32D2D;">비선호: ' + NOTIF_LABELS[worstIdx] + '</span>' : '') +
-        '</div></div></div>';
+        '</div>' +
+        '<div style="background:#fff;border-radius:8px;padding:6px 10px;">' +
+        row('비교 앱', r.compareApp) +
+        row('비교 느낌', r.compareFeeling) +
+        (r.compareFeelingOther ? row('기타 느낌', r.compareFeelingOther) : '') +
+        row('비교 도움도', r.compareHelp) +
+        row('비교 특성', r.compareFeature) +
+        row('인터뷰 참여', r.interviewWilling) +
+        row('인터뷰 연락처', r.interviewContact) +
+        row('이벤트 연락처', r.eventContact) +
+        '</div>' +
+        '</div></div>';
     });
     el.innerHTML = html;
   }
@@ -1017,24 +1039,52 @@ function submitSurvey() {
   allResponses.push({
     gender:              answers[0][0] !== null ? ['남','여'][answers[0][0]] : '',
     age:                 answers[0][1] !== null ? ['10대','20대','30대','40대','50대 이상'][answers[0][1]] : '',
+    appUsage:            answers[1][0] !== null ? ['거의 이용 안 함','월 1~2회','주 1회 정도','주 2~3회','거의 매일'][answers[1][0]] : '',
+    notifOnOff:          answers[1][1] !== null ? ['대부분 켜둠','일부 앱만 켜둠','거의 꺼둠','잘 모름'][answers[1][1]] : '',
+    notifReason:         Array.isArray(answers[1][2]) ? answers[1][2].map(i => ['할인 / 쿠폰','배송 / 주문 상태','추천 상품','재입고 / 품절 해제','이벤트 / 프로모션'][i]).join(', ') : '',
+    notifFeeling:        answers[1][3] !== null ? ['매우 유용하다','유용한 편이다','보통이다','다소 불편하다','매우 불편하다'][answers[1][3]] : '',
+    notifOffReason:      Array.isArray(answers[1][4]) ? answers[1][4].map(i => ['너무 자주 옴','내용이 별로 유용하지 않음','내용이 사생활 침해처럼 느껴짐','말투가 부담스러움','이모지나 표현이 어색함','기타','끄지 않음'][i]).join(', ') : '',
+    helpCase:            answers[1][5] || '',
+    annoyCase:           answers[1][6] || '',
+    openRate:            answers[1][7] !== null ? ['모두 열어봄','대부분 열어봄','종종 열어봄','거의 열지 않음','전혀 열지 않음'][answers[1][7]] : '',
     expName:             getExpName(),
-    notifPick:           answers[2][1],
-    notifPick2:          answers[2][2],
-    notifWorst:          answers[2][3],
-    compareFeelingOther: compareFeelingOther
+    notifPick:           answers[2][1] || null,
+    notifPick2:          answers[2][2] || null,
+    notifWorst:          answers[2][3] || null,
+    compareApp:          answers[3][0] !== null ? ['금융','OTT','배달','SNS / 커뮤니티','언어 학습','기타'][answers[3][0]] : '',
+    compareFeeling:      Array.isArray(answers[3][1]) ? answers[3][1].map(i => ['더 친근하다','더 광고 같다','더 유용하다','더 부담스럽다','더 자주 온다','더 사생활 침해처럼 느껴진다','차이가 없다','기타'][i]).join(', ') : '',
+    compareFeelingOther: compareFeelingOther,
+    compareHelp:         answers[3][2] !== null ? ['매우 도움이 된다','다소 도움이 된다','보통이다','다소 도움이 되지 않는다','전혀 도움이 되지 않는다'][answers[3][2]] : '',
+    compareFeature:      answers[3][3] || '',
+    interviewWilling:    answers[4][0] !== null ? ['예','아니오'][answers[4][0]] : '',
+    interviewContact:    answers[4][1] || '',
+    eventContact:        answers[4][2] || ''
   });
 
   if (window.saveToFirebase) {
     window.saveToFirebase({
-      gender:           answers[0][0] !== null ? ['남','여'][answers[0][0]] : '',
-      age:              answers[0][1] !== null ? ['10대','20대','30대','40대','50대 이상'][answers[0][1]] : '',
-      expName:          getExpName(),
-      notifPick:        answers[2][1] || null,
-      notifPick2:       answers[2][2] || null,
-      notifWorst:       answers[2][3] || null,
-      interviewWilling: answers[4][0] !== null ? ['예','아니오'][answers[4][0]] : '',
-      interviewContact: answers[4][1] || '',
-      eventContact:     answers[4][2] || ''
+      gender:              answers[0][0] !== null ? ['남','여'][answers[0][0]] : '',
+      age:                 answers[0][1] !== null ? ['10대','20대','30대','40대','50대 이상'][answers[0][1]] : '',
+      appUsage:            answers[1][0] !== null ? ['거의 이용 안 함','월 1~2회','주 1회 정도','주 2~3회','거의 매일'][answers[1][0]] : '',
+      notifOnOff:          answers[1][1] !== null ? ['대부분 켜둠','일부 앱만 켜둠','거의 꺼둠','잘 모름'][answers[1][1]] : '',
+      notifReason:         Array.isArray(answers[1][2]) ? answers[1][2].map(i => ['할인 / 쿠폰','배송 / 주문 상태','추천 상품','재입고 / 품절 해제','이벤트 / 프로모션'][i]).join(', ') : '',
+      notifFeeling:        answers[1][3] !== null ? ['매우 유용하다','유용한 편이다','보통이다','다소 불편하다','매우 불편하다'][answers[1][3]] : '',
+      notifOffReason:      Array.isArray(answers[1][4]) ? answers[1][4].map(i => ['너무 자주 옴','내용이 별로 유용하지 않음','내용이 사생활 침해처럼 느껴짐','말투가 부담스러움','이모지나 표현이 어색함','기타','끄지 않음'][i]).join(', ') : '',
+      helpCase:            answers[1][5] || '',
+      annoyCase:           answers[1][6] || '',
+      openRate:            answers[1][7] !== null ? ['모두 열어봄','대부분 열어봄','종종 열어봄','거의 열지 않음','전혀 열지 않음'][answers[1][7]] : '',
+      expName:             getExpName(),
+      notifPick:           answers[2][1] || null,
+      notifPick2:          answers[2][2] || null,
+      notifWorst:          answers[2][3] || null,
+      compareApp:          answers[3][0] !== null ? ['금융','OTT','배달','SNS / 커뮤니티','언어 학습','기타'][answers[3][0]] : '',
+      compareFeeling:      Array.isArray(answers[3][1]) ? answers[3][1].map(i => ['더 친근하다','더 광고 같다','더 유용하다','더 부담스럽다','더 자주 온다','더 사생활 침해처럼 느껴진다','차이가 없다','기타'][i]).join(', ') : '',
+      compareFeelingOther: compareFeelingOther,
+      compareHelp:         answers[3][2] !== null ? ['매우 도움이 된다','다소 도움이 된다','보통이다','다소 도움이 되지 않는다','전혀 도움이 되지 않는다'][answers[3][2]] : '',
+      compareFeature:      answers[3][3] || '',
+      interviewWilling:    answers[4][0] !== null ? ['예','아니오'][answers[4][0]] : '',
+      interviewContact:    answers[4][1] || '',
+      eventContact:        answers[4][2] || ''
     });
   }
   const card = document.getElementById('survey-card');
@@ -1095,7 +1145,6 @@ function submitSurvey() {
   const app = initializeApp(firebaseConfig);
   const db  = getFirestore(app);
   
-  // 응답 저장 (설문 제출 시 자동 호출)
   window.saveToFirebase = async function(data) {
     try {
       await addDoc(collection(db, 'survey_responses'), {
@@ -1105,6 +1154,17 @@ function submitSurvey() {
       console.log('✅ 저장 완료');
     } catch(e) {
       console.error('❌ 저장 실패', e);
+    }
+  };
+
+  window.loadFromFirebase = async function() {
+    try {
+      const q = query(collection(db, 'survey_responses'), orderBy('submittedAt', 'desc'));
+      const snap = await getDocs(q);
+      return snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    } catch(e) {
+      console.error('❌ 불러오기 실패', e);
+      return [];
     }
   };
 </script> 
